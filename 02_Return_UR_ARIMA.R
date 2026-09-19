@@ -1,3 +1,6 @@
+library(forecast)
+library(bootUR)
+
 # --- Transform Price to Returns -------------
 
 # Simple returns and log returns 
@@ -74,21 +77,24 @@ compute_AIC <- function(model) {
 # We allow for a constant because by efficient market the return is expected to be equal to the risk free rate.
 ARMA00 <- arima(log_ret, order = c(0,0,0), method = "CSS", n.cond = 9, include.mean = TRUE) # this is simply the average logged return
 summary(ARMA00)
+checkresiduals(ARMA00) # from the forecast package
 
 AR6 <- arima(log_ret, order = c(6,0,0), method = "CSS", n.cond = 9, include.mean = TRUE) 
 summary(AR6)
+checkresiduals(AR6)
 
 AR9 <- arima(log_ret, order = c(9,0,0), method = "CSS", n.cond = 9, include.mean = TRUE)
 summary(AR9)
+checkresiduals(AR9)
 
 # ---- Automated ARIMA Estimation -----------
 
 # Lastly, we can try the automated ARIMA to see if a better model is possible that results in stationary residuals.
-library(forecast) # use auto.arima from the forecast package
+# use auto.arima from the forecast package
 
 # Can we find an ARIMA with a smaller lag than 9 but a higher AIC?
 auto_arima_1 <- auto.arima(log_ret, max.p = 9, max.q = 9, ic = "aic") # use the AIC throughout this case to be consistent.
-summary(auto_arima_1) # ARMA(5, 0, 6) with zero mean
+summary(auto_arima_1) # ARMA(7, 0, 5) with non-zero mean
 
 ARMA75 <- arima(log_ret_clean, order = c(7,0,5), include.mean = FALSE, method = "CSS", n.cond = 9) # use the same method and n.cond for comparison
 summary(ARMA75)
@@ -108,6 +114,8 @@ Model_Performance <- data.frame(
 )
 
 Model_Performance
+
+
 
 # ---- Forecast Performance Using ARMA56 ----------
 
