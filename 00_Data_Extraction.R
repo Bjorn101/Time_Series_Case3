@@ -1,33 +1,33 @@
-## ============================================================
-## Case 3: Modeling Stock Prices, Returns and Volatility
-## PHASE 1 -- Data Collection & Exploration
-## Stock: Bank of America (BAC)
-## ============================================================
-##
-## Motivation for stock choice:
-## - Bank of America (NYSE: BAC) is a large, highly liquid financial
-##   stock with a long daily price history on Yahoo Finance (back to
-##   the early 1980s under various tickers; consolidated modern data
-##   from the 1990s onward).
-## - Choosing a bank stock is attractive for this case because banks
-##   were at the epicenter of the 2007-2009 Global Financial Crisis,
-##   giving a clear structural-break / volatility-clustering story.
-## - It also fits naturally into a "financials" peer group (JPM, C,
-##   WFC, GS, ...) for the later multivariate spillover analysis.
-##
-## Sample length motivation:
-## - We pull data from 2000-01-01 to present. This covers:
-##     (i)   the dot-com aftermath (2001-2002)
-##     (ii)  the Global Financial Crisis (2007-2009), which is
-##           especially relevant for a bank stock
-##     (iii) the European debt crisis (2011-2012)
-##     (iv)  the COVID-19 crash (2020)
-## - This gives >6000 daily observations, more than enough for
-##   reliable ARIMA / GARCH / HAR estimation.
-## ============================================================
+"
+============================================================
+Case 3: Modeling Stock Prices, Returns and Volatility
+PHASE 1 -- Data Collection & Exploration
+Stock: Bank of America (BAC)
+============================================================
+Motivation for stock choice:
+- Bank of America (NYSE: BAC) is a large, highly liquid financial
+ stock with a long daily price history on Yahoo Finance (back to
+ the early 1980s under various tickers; consolidated modern data
+from the 1990s onward).
+- Choosing a bank stock is attractive for this case because banks
+ were at the epicenter of the 2007-2009 Global Financial Crisis,
+ giving a clear structural-break / volatility-clustering story.
+- It also fits naturally into a financials peer group (JPM, C, WFC, GS, ...) for the later multivariate spillover analysis.
+
+Sample length motivation:
+- We pull data from 2000-01-03 to 2026-09-11. This covers:
+   (i)   the dot-com aftermath (2001-2002)
+   (ii)  the Global Financial Crisis (2007-2009), which is
+         especially relevant for a bank stock
+   (iii) the European debt crisis (2011-2012)
+   (iv)  the COVID-19 crash (2020)
+- This gives >6000 daily observations, more than enough for
+ reliable ARIMA / GARCH / HAR estimation.
+============================================================
+"
 
 
-## ---- Packages ----------------------------
+# ---- Packages ----------------------------
 # install.packages("quantmod")
 
 library(ggplot2)
@@ -39,7 +39,7 @@ library(quantmod)   # Tip in case description: to download data from Yahoo Finan
 
 # Ask Chatgpt: how to download the data of bank of america from yahoo finance using the quantmod package?
 ticker     <- "BAC"
-start_date <- "2000-01-03" # this is a Monday
+start_date <- "2000-01-03" # 1-1 is a saturday (no trading day), so we start at 3-1 (a monday).
 end_date   <- "2026-09-11"
 
 # Download daily OHLCV + Adjusted Close from Yahoo Finance
@@ -78,19 +78,6 @@ plot(bac$Adjusted, type = "l")
 summary(bac$Adjusted)
 summary(bac$Volume)
 
-# Simple returns and log returns (previewed here; full construction
-# happens in the "From Prices to Returns" step later in the case)
-simple_ret <- diff(bac$Adjusted) / stats::lag(bac$Adjusted, -1)
-log_ret    <- diff(log(bac$Adjusted), differences = 1) 
-
-# data quality checks
-sum(is.na(log_ret)) # there is one missing value
-which(is.na(log_ret)) # it is the first observation, which can be explained because there is no value to substract from the first observation
-
-log_ret_clean <- na.omit(log_ret)
-range(index(log_ret_clean)) # the cleaned series starts on Tuesday
-
-plot(log_ret_clean, type = "l")
 
 # --- Event Plot --------------
 # askChatgpt: Make a plot that visualizes the following events on the plot of the stock price: 
@@ -100,7 +87,7 @@ plot(log_ret_clean, type = "l")
 crisis_periods <- data.frame(
   name  = c("GFC", "Euro Debt Crisis", "COVID-19 Crash", "US-Iran War"),
   start = as.Date(c("2007-06-01", "2011-06-01", "2020-02-01", "2026-02-28")),
-  end   = as.Date(c("2009-06-30", "2012-06-30", "2020-06-30", end_date))
+  end   = as.Date(c("2009-06-30", "2012-06-30", "2020-06-30", end_date)) # modified to allign with end_date of the data
 )
 
 merrill_date <- as.Date("2008-09-15")  # Merrill Lynch acquisition announcement
@@ -116,7 +103,7 @@ shade_crises <- function() {
   }
 }
 
-# --- Two-panel figure: price on top, rolling volatility below --------------
+# --- Major Events Overlay --------------
 par(mfrow = c(2, 1), mar = c(2, 4, 3, 1))  # top panel: tighter bottom margin
 
 # Panel 1: Adjusted close price

@@ -1,8 +1,8 @@
 #DISCLAIMER:
 #I use chatgpt as my guidance on coding debugs, knowledge clarification and expansion,and paper recommendations
 
-install.packages("rugarch")
-
+# install.packages("rugarch")
+# install.packages("DistributionUtils")
 library(rugarch)
 
 #Plot ACF of log return and absolute log return to illustrate why arma do not work
