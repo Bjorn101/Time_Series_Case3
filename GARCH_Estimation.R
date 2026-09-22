@@ -128,7 +128,6 @@ fit_garch12 <- ugarchfit(
 #I also introduce two major asymmetrical GARCH models 
 #ENGLE, R.F. and NG, V.K. (1993), Measuring and Testing the Impact of News on Volatility. The Journal of Finance, 48: 1749-1778. https://doi.org/10.1111/j.1540-6261.1993.tb05127.x
 
-
 #GJR-GARCH
 spec_gjr <- ugarchspec(
   variance.model = list(
@@ -170,7 +169,7 @@ fit_egarch <- ugarchfit(
 #check if asymmetry is statistical significant
 fit_gjr@fit$matcoef
 fit_egarch@fit$matcoef
-#we can see from the result both with p-value smaller than 0.05, 
+#we can see from the result both with p-value of alpha1 smaller than 0.05, 
 #so it is statistical significant that positive and negative shocks have different volatility effect
 
 #Ask for chatgpt on how to extract AIC and BIC 
@@ -192,6 +191,5 @@ IC <- t(sapply(models, function(x) {
 colnames(IC) <- c("AIC", "BIC")
 
 print(IC)
-#We can see from the result, EGARCH has the lowest AIC and BIC, so select EGARCH
+#We can see from the result, EGARCH has the lowest AIC and BIC, and also because of the nature of financial returns which has asymmetric volatility, so select EGARCH
 coef(fit_egarch)
-
