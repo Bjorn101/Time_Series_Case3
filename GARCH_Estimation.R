@@ -1,9 +1,10 @@
 #DISCLAIMER:
 #I use chatgpt as my guidance on coding debugs, knowledge clarification and expansion,and paper recommendations
 
-# install.packages("rugarch")
-# install.packages("DistributionUtils")
+install.packages("rugarch")
+
 library(rugarch)
+log_ret_clean <- 100 * diff(log(bac$Adjusted))
 
 #Plot ACF of log return and absolute log return to illustrate why arma do not work
 # ACF plot of log return
@@ -63,7 +64,7 @@ fit_garch_t <- ugarchfit(
 )
 
 coef(fit_garch_t)
-# we can see that the parameter shape is 5.255 which is an indication of fat-tailed
+# we can see that the parameter shape is 5.273 which is an indication of fat-tailed
 #So I will use innovation distribution as student-t in the following models
 
 #ARCH(1)
