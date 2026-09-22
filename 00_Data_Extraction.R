@@ -1,37 +1,7 @@
-"
-============================================================
-Case 3: Modeling Stock Prices, Returns and Volatility
-PHASE 1 -- Data Collection & Exploration
-Stock: Bank of America (BAC)
-============================================================
-Motivation for stock choice:
-- Bank of America (NYSE: BAC) is a large, highly liquid financial
- stock with a long daily price history on Yahoo Finance (back to
- the early 1980s under various tickers; consolidated modern data
-from the 1990s onward).
-- Choosing a bank stock is attractive for this case because banks
- were at the epicenter of the 2007-2009 Global Financial Crisis,
- giving a clear structural-break / volatility-clustering story.
-- It also fits naturally into a financials peer group (JPM, C, WFC, GS, ...) for the later multivariate spillover analysis.
-
-Sample length motivation:
-- We pull data from 2000-01-03 to 2026-09-11. This covers:
-   (i)   the dot-com aftermath (2001-2002)
-   (ii)  the Global Financial Crisis (2007-2009), which is
-         especially relevant for a bank stock
-   (iii) the European debt crisis (2011-2012)
-   (iv)  the COVID-19 crash (2020)
-- This gives >6000 daily observations, more than enough for
- reliable ARIMA / GARCH / HAR estimation.
-============================================================
-"
-
-
-# ---- Packages ----------------------------
 # install.packages("quantmod")
 
 library(ggplot2)
-library(quantmod)   # Tip in case description: to download data from Yahoo Finance
+library(quantmod)   # Tip from case description: to download data from Yahoo Finance
 # quantmod also includes xts and zoo
 
 
@@ -80,7 +50,7 @@ summary(bac$Volume)
 
 
 # --- Event Plot --------------
-# askChatgpt: Make a plot that visualizes the following events on the plot of the stock price: 
+# ask Chatgpt: Make a plot that visualizes the following events on the plot of the stock price: 
 # Merrill Lynch Acquisition, Great Financial Crisis, Euro Debt Crisis, the Covid-19 Crash, US-IRAN war
 
 # Define crisis windows as start/end dates
@@ -104,9 +74,7 @@ shade_crises <- function() {
 }
 
 # --- Major Events Overlay --------------
-par(mfrow = c(2, 1), mar = c(2, 4, 3, 1))  # top panel: tighter bottom margin
 
-# Panel 1: Adjusted close price
 plot(index(bac), as.numeric(bac$Adjusted), type = "n",
      xlab = "", ylab = "Adjusted Close Price",
      main = "BAC Adjusted Close")
@@ -117,14 +85,3 @@ text(merrill_date, par("usr")[4], "Merrill Lynch\nacquisition",
      col = "darkgreen", cex = 0.7, pos = 1, offset = 0.3)
 legend("topleft", legend = crisis_periods$name, fill = crisis_colors,
        border = NA, bty = "n", cex = 0.7)
-
-# Panel 2: logged return using same date axis and shading
-par(mar = c(4, 4, 2, 1))  # bottom panel: room for the x-axis label
-plot(index(log_ret_clean), as.numeric(log_ret_clean), type = "n",
-     xlab = "Date", ylab = "logged return",
-     main = "Logged Return")
-shade_crises()
-lines(index(log_ret_clean), as.numeric(log_ret_clean), col = "steelblue", lwd = 1)
-abline(v = merrill_date, col = "darkgreen", lty = 2, lwd = 2)
-
-par(mfrow = c(1, 1))  # reset layout

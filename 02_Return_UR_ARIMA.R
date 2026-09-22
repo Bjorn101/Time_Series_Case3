@@ -96,7 +96,8 @@ checkresiduals(AR9)
 auto_arima_1 <- auto.arima(log_ret, max.p = 9, max.q = 9, ic = "aic") # use the AIC throughout this case to be consistent.
 summary(auto_arima_1) # ARMA(7, 0, 5) with non-zero mean
 
-ARMA75 <- arima(log_ret_clean, order = c(7,0,5), include.mean = FALSE, method = "CSS", n.cond = 9) # use the same method and n.cond for comparison
+# reestimate to be able to compute a comparable AIC
+ARMA75 <- arima(log_ret, order = c(7,0,5), include.mean = TRUE, method = "CSS", n.cond = 9) # use the same method and n.cond for comparison
 summary(ARMA75)
 
 # ---- Model Performance Table ----------
@@ -116,9 +117,9 @@ Model_Performance <- data.frame(
 Model_Performance
 
 
+# ---- Forecast Performance Using ARMA56 (best AIC) ----------
 
-# ---- Forecast Performance Using ARMA56 ----------
-
+# function to split a sample into a training (full sample - test sample) and testing sample
 split_train_test <- function(y, test_size) {
   T <- length(y)
   train <- window(y, start = time(y)[1], end = time(y)[T- (test_size)]) # window() preserves the time of ts.
@@ -126,6 +127,7 @@ split_train_test <- function(y, test_size) {
   return(list(train = train, test = test))
 }
 
+# Function to fit an arima model at each iteration and forecast and calculate the forecast error for the test sample
 compute_forecast_error <- function(train, test, order) {
   # estimate ARMA(1,2) model on training data
   model <- arima(train, order = order, method = "CSS")
@@ -153,13 +155,71 @@ compute_rolling_window_errors <- function(y, train_size, test_size, order) {
   return(forecast_error_vector)
 }
 
-train_size <- 1008 # 4 years (252 * 4)
+train_size <- 504 # 2 years (252 * 2)
 test_size <- 1 # 1 day
 order <- c(5,0,7) # ARMA57 had the best AIC
-rolling_errors <- compute_rolling_window_errors(log_ret_clean, train_size, test_size, order)
+rolling_errors <- compute_rolling_window_errors(log_ret, train_size, test_size, order)
 errors_vector <- unlist(rolling_errors)
 mean(errors_vector^2) 
 var(log_ret_clean) # the variance is less than the mean-squared-error,
 # this means that forecast a return of 0 would be better than forecasting with the ARMA57 model
 # CONCLUSION: All our found ARMA models do not outperform a simple expection of 0 return.
 
+orders <- list(
+  
+  c(0, 0, 0),
+  
+  c(6, 0, 0),
+  
+  c(9, 0, 0),
+  
+  c(7, 0, 5)
+)
+
+rolling_errors <- lapply(
+  
+  orders,
+  
+  function(order) {
+    
+    compute_rolling_window_errors(
+      
+      log_ret,
+      
+      train_size,
+      
+      test_size,
+      
+      order
+      
+    )
+    
+  }
+  
+)
+
+names(rolling_errors) <- c(
+  
+  "ARMA(0,0)",
+  
+  "ARMA(6,0)",
+  
+  "ARMA(9,0)",
+  
+  "ARMA(7,5)"
+  
+)
+
+mse_results <- data.frame(
+  model = names(rolling_errors),
+  MSE = sapply(rolling_errors, function(x) mean(unlist(x)^2))
+)
+
+mse_results
+
+no_model <- var(log_ret)
+no_model
+
+mean <- mean(log_ret)
+mean
+var(log_ret - mean)
