@@ -120,7 +120,7 @@ summary(AR9)
 auto_arima_log_ret <- auto.arima(log_ret, max.p = 10, max.q = 10, ic = "aic", allowmean = TRUE, method = "CSS")
 summary(auto_arima_log_ret)  # selects ARMA(7,0,5) with non-zero mean
 
-best_order <- arimaorder(auto_arima_1)[c("p", "d", "q")]  # (7, 0, 5) - read off the fit, not hardcoded
+best_order <- arimaorder(auto_arima_1)[c("p", "d", "q")]  
 
 # Re-estimate with the same method/n.cond as the other candidates for a fair AIC comparison
 ARMA75 <- arima(log_ret, order = best_order, include.mean = FALSE, method = "CSS", n.cond = 9)
@@ -132,7 +132,7 @@ models <- list(ARMA00 = ARMA00, AR6 = AR6, AR9 = AR9, ARMA75 = ARMA75)
 
 # ask Chatgpt: How to summarize the AIC and the sigma2 of a list of models in a data frame?
 model_performance <- data.frame(
-  AIC    = sapply(models, compute_AIC),
+  AIC = sapply(models, compute_AIC),
   Sigma2 = sapply(models, function(m) m$sigma2)
 )
 model_performance
@@ -157,7 +157,7 @@ rolling_errors <- lapply(orders, function(order) {
 
 mse_results <- data.frame(
   model = names(rolling_errors),
-  MSE   = sapply(rolling_errors, function(e) mean(unlist(e)^2))
+  MSE = sapply(rolling_errors, function(e) mean(unlist(e)^2))
 )
 mse_results
 
