@@ -1,5 +1,5 @@
 library(forecast) # for auto.arima function
-library(bootUR) # for adf and arima functions
+library(bootUR) # for adf function
 
 # ---- Helper functions -----
 
@@ -106,7 +106,7 @@ par(mfrow = c(1, 1))
 # -> their likelihoods/AICs are computed on the same effective sample and are directly comparable.
 # Non-zero mean is allowed: under the efficient market, expected returns are at least the risk-free rate.
 
-ARMA00 <- arima(log_ret, order = c(0, 0, 0), method = "CSS", n.cond = 9, include.mean = TRUE)
+ARMA00 <- arima(log_ret, order = c(0, 0, 0), method = "CSS", n.cond = 9, include.mean = TRUE) # arima from stats package
 AR6 <- arima(log_ret, order = c(6, 0, 0), method = "CSS", n.cond = 9, include.mean = TRUE)
 AR9 <- arima(log_ret, order = c(9, 0, 0), method = "CSS", n.cond = 9, include.mean = TRUE)
 
