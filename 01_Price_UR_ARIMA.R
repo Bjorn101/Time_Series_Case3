@@ -1,4 +1,5 @@
 library(bootUR)
+library(forecast)
 
 # --- Plotting price and correlograms for the full period ---------
 # Plot adjusted stock price
@@ -18,6 +19,9 @@ par(mfrow = c(1,1))
 # Create first and second differences
 bac_diff1 <- diff(bac$Adjusted)
 bac_diff2 <- diff(bac_diff1)
+
+which(is.na(bac_diff1))
+which(is.na(bac_diff2))
 
 # remove the first observation for which there is nothing to difference against.
 bac_diff1 <- na.omit(bac_diff1)
@@ -41,11 +45,11 @@ boot_adf_diff1 <- boot_adf(bac_diff1, deterministics = "intercept")
 boot_adf_diff1  # reject h0
 
 boot_adf_level_int <- boot_adf(bac$Adjusted, deterministics = "intercept")
-boot_adf_level_int
+boot_adf_level_int # not reject h0
 
 # Bootstrap ADF with trend
 boot_adf_level_trend <- boot_adf(bac$Adjusted, deterministics = "trend")
-boot_adf_level_trend
+boot_adf_level_trend # todo: include result
 
 
 # ---- ARIMA for price series ----------
@@ -66,21 +70,9 @@ arima_011 <- arima(bac$Adjusted, order = c(0, 1, 1), n.cond = 1, method = "CSS",
 
 summary(arima_010) # selected
 summary(arima_110)
-summar(arima_011)
-
-## Automatic ARIMA Model Selection
-auto_arima <- auto.arima(bac$Adjusted)
-auto_arima  # selects same model (0,1,0)
-checkresiduals(auto_arima)
+summary(arima_011)
 
 # ---- Model Performance Table ----------
-
-compute_AIC <- function(model) {
-  k <- length(model$coef) + 1
-  loglik <- model$loglik
-  AIC <- 2*k-2*loglik
-  return(AIC)
-}
 
 models <- list(
   arima_010 = arima_010,
@@ -94,3 +86,37 @@ Model_Performance <- data.frame(
 )
 
 Model_Performance
+
+# --- Automated Arima ------
+
+auto_arima <- auto.arima(bac$Adjusted) # from forecast package
+summary(auto_arima)  # selects same model (0,1,0)
+checkresiduals(auto_arima)
+
+# ---- Out-of-sample forecast evaluation --------------------------
+
+train_size <- round(0.7*length(log_ret))  # 70% of the data 
+test_size <- 1 # 1-day-ahead forecast
+
+# ask ChatGPT: How to efficiently apply the compute_rolling_window_errors function on a list of arima models 
+# with varying orders and zero/non-zero means?
+orders <- list(
+  "ARIMA(0,1,0)" = list(order = c(0, 1, 0),        mean = TRUE),
+  "ARIMA(1,1,0)" = list(order = c(1, 1, 0),        mean = TRUE),
+  "ARIMA(0,1,1)" = list(order = c(0, 1, 1),        mean = TRUE)
+)
+
+rolling_errors_prices <- lapply(orders, function(order) {
+  compute_rolling_window_errors(bac$Adjusted, train_size, test_size, order = order$order, mean = order$mean)
+})
+
+mse_results_prices <- data.frame(
+  model = names(rolling_errors_prices),
+  MSE = sapply(rolling_errors_prices, function(e) mean(unlist(e)^2))
+)
+mse_results_prices
+
+
+
+# all of the models' MSE's are smaller than the MSE of no model. 
+# The lowest model MSE belongs to ARMA(0,0) (only the intercept)
