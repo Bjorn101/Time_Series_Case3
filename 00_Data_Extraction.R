@@ -1,4 +1,10 @@
-# install.packages("quantmod")
+## ---- Package installation (for all scripts) ----------------
+# Installs every package used in scripts 00-05, but only those not yet installed.
+packages <- c("quantmod", "ggplot2", "bootUR", "forecast",
+              "rugarch", "dplyr", "lubridate", "zoo")
+
+missing_packages <- packages[!packages %in% rownames(installed.packages())] # tip by Chatgpt: avoids reinstallation of packages
+if (length(missing_packages) > 0) install.packages(missing_packages)
 
 library(ggplot2)
 library(quantmod)   # Tip from case description: to download data from Yahoo Finance

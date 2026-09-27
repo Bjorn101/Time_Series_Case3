@@ -1,8 +1,6 @@
 #DISCLAIMER:
 #I use chatgpt as my guidance on coding debugs, knowledge clarification and expansion,and paper recommendations
 
-install.packages("rugarch")
-
 library(rugarch)
 log_ret_clean <- 100 * diff(log(bac$Adjusted))
 

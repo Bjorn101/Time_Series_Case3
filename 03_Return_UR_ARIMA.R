@@ -87,7 +87,7 @@ summary(AR9)
 auto_arima_log_ret <- auto.arima(log_ret, max.p = 10, max.q = 10, ic = "aic", allowmean = TRUE, method = "CSS")
 summary(auto_arima_log_ret)  # selects ARMA(7,0,5) with non-zero mean
 
-best_order <- arimaorder(auto_arima_1)[c("p", "d", "q")]  
+best_order <- arimaorder(auto_arima_log_ret)[c("p", "d", "q")]  
 
 # Re-estimate with the same method/n.cond as the other candidates for a fair AIC comparison
 ARMA75 <- arima(log_ret, order = best_order, include.mean = FALSE, method = "CSS", n.cond = 9)

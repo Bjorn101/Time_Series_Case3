@@ -1,15 +1,11 @@
-#install.packages("dplyr")
-#install.packages("lubridate")
-#install.packages("zoo")
-
 library(dplyr)
 library(lubridate)
 library(zoo)
 
 ## ---- 1. Import ----
 
-# Load the CSV file under filename "raw"
-raw <- read.csv("~/Library/Mobile Documents/com~apple~CloudDocs/Documenten - MacBook Pro van alec/Uni/E&OR/Time Series Analytics/Case 3 project/BAC_daily.csv", sep = ",")
+# Load the CSV file (written by 00_Data_Extraction.R to the project folder) under filename "raw"
+raw <- read.csv("BAC_daily.csv", sep = ",")
 head(raw,10)
 
 # Create a second variable df and mutate it so all the entries are in the correct variable forms

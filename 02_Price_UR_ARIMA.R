@@ -95,7 +95,7 @@ checkresiduals(auto_arima)
 
 # ---- Out-of-sample forecast evaluation --------------------------
 
-train_size <- round(0.7*length(log_ret))  # 70% of the data 
+train_size <- round(0.7*length(bac$Adjusted))  # 70% of the data
 test_size <- 1 # 1-day-ahead forecast
 
 # ask ChatGPT: How to efficiently apply the compute_rolling_window_errors function on a list of arima models 
