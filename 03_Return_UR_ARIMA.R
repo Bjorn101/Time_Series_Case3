@@ -3,7 +3,7 @@ library(bootUR) # for adf function
 
 
 
-# ---- Data preparation: price to returns --------------------
+# --- Data preparation: price to returns ---
 
 # Simple and log returns
 simple_ret_raw <- diff(bac$Adjusted) / bac$Adjusted[-length(bac$Adjusted)] # in the denominator: the last element is dropped
@@ -16,7 +16,7 @@ log_ret <- na.omit(log_ret_raw)
 range(index(simple_ret))  # sample starts on a Tuesday
 range(index(log_ret)) # sample starts on a Tuesday
 
-# ---- Exploratory analysis -----------------------------------
+# --- Exploratory analysis ---
 
 summary(simple_ret)   # max/min simple returns (~-0.40 / 0.26) diverge
 summary(log_ret)      # from log returns (simple vs. log returns differ for large moves)
@@ -24,7 +24,7 @@ summary(log_ret)      # from log returns (simple vs. log returns differ for larg
 plot(simple_ret, type = "l", main = "Simple Returns")
 plot(log_ret,    type = "l", main = "Log Returns")
 
-# ---- Unit root testing (Pantula Principle) ------------------
+# --- Unit root testing (Pantula Principle) ---
 
 # We perform a UR test to formally confirm that log price is I(1), i.e. one round of
 # differencing (= log returns) is stationary. 
@@ -54,7 +54,7 @@ boot_adf_log_price # not reject h0
 # log price is I(1); log returns (log_ret) are stationary.
 # All subsequent modeling is done on log_ret.
 
-# ---- Correlogram analysis: candidate model orders -----------
+# --- Correlogram analysis: candidate model orders ---
 
 par(mfrow = c(1, 2))
 acf(log_ret,  main = "ACF of Log Returns")
@@ -65,7 +65,7 @@ par(mfrow = c(1, 1))
 # PACF shows lag 1 insignificant but partial correlation outside the
 # 95% bands at lags 2, 3, 4, 5, 6, 9, etc. -> no clean AR order either.
 
-# ---- Model estimation ----------------------------------------
+# --- Model estimation ---
 
 # Since neither correlogram gives a clean cutoff, compare a small set
 # of candidate models. 
@@ -93,7 +93,7 @@ best_order <- arimaorder(auto_arima_log_ret)[c("p", "d", "q")]
 ARMA75 <- arima(log_ret, order = best_order, include.mean = FALSE, method = "CSS", n.cond = 9)
 summary(ARMA75)
 
-# ---- Model comparison table ------------------------------------
+# --- Model comparison table ---
 
 models <- list(ARMA00 = ARMA00, AR6 = AR6, AR9 = AR9, ARMA75 = ARMA75)
 
@@ -104,7 +104,7 @@ model_performance <- data.frame(
 )
 model_performance
 
-# ---- Out-of-sample forecast evaluation --------------------------
+# --- Out-of-sample forecast evaluation ---
 
 train_size <- round(0.7*length(log_ret))  # 70% of the data 
 test_size <- 1 # 1-day-ahead forecast

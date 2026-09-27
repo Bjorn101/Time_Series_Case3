@@ -1,4 +1,4 @@
-## ---- Package installation (for all scripts) ----------------
+# --- Package installation (for all scripts) ---
 # Installs every package used in scripts 00-05, but only those not yet installed.
 packages <- c("quantmod", "ggplot2", "bootUR", "forecast",
               "rugarch", "dplyr", "zoo")
@@ -11,7 +11,7 @@ library(quantmod)   # Tip from case description: to download data from Yahoo Fin
 # quantmod also includes xts and zoo
 
 
-## ---- Data collection -----------------------
+# --- Data collection ---
 
 # Ask Chatgpt: how to download the data of bank of america from yahoo finance using the quantmod package?
 ticker     <- "BAC"
@@ -42,14 +42,14 @@ nrow(bac)                # number of trading days obtained
 
 # Conclusion: no missing data
 
-## ---- Plots & Basic Descriptive Statistics -------------------
+# --- Plots & Basic Descriptive Statistics ---
 
 plot(bac$Adjusted, type = "l")
 summary(bac$Adjusted)
 summary(bac$Volume)
 
 
-# --- Event Plot --------------
+# --- Event Plot ---
 # ask Chatgpt: Make a plot that visualizes the following events on the plot of the stock price: 
 # Merrill Lynch Acquisition, Great Financial Crisis, Euro Debt Crisis, the Covid-19 Crash, US-IRAN war
 
@@ -73,7 +73,7 @@ shade_crises <- function() {
   }
 }
 
-# --- Major Events Overlay --------------
+# --- Major Events Overlay ---
 
 plot(index(bac), as.numeric(bac$Adjusted), type = "n",
      xlab = "", ylab = "Adjusted Close Price",

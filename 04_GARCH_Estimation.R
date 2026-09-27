@@ -2,6 +2,9 @@
 #I use chatgpt as my guidance on coding debugs, knowledge clarification and expansion,and paper recommendations
 
 library(rugarch)
+
+# --- Data preparation and ACF ---
+
 log_ret_clean <- 100 * diff(log(bac$Adjusted))
 
 #Plot ACF of log return and absolute log return to illustrate why arma do not work
@@ -14,6 +17,8 @@ acf(abs(log_ret_clean),
     main = "ACF of Absolute Log Returns",
     lag.max = 30)
 
+
+# --- Baseline GARCH(1,1): normal vs Student-t errors ---
 
 #I use GARCH(1,1) as baseline model
 
@@ -64,6 +69,8 @@ fit_garch_t <- ugarchfit(
 coef(fit_garch_t)
 # we can see that the parameter shape is 5.273 which is an indication of fat-tailed
 #So I will use innovation distribution as student-t in the following models
+
+# --- ARCH(1), ARCH(2) and GARCH(1,2) with Student-t errors ---
 
 #ARCH(1)
 spec_arch1 <- ugarchspec(
@@ -122,6 +129,8 @@ fit_garch12 <- ugarchfit(
   solver = "hybrid"
 )
 
+# --- Asymmetric GARCH models ---
+
 #Since the market's reaction to positive and negative news may be asymmetrical in terms of volatility (Engle and Ng, 1993)
 #I also introduce two major asymmetrical GARCH models 
 #ENGLE, R.F. and NG, V.K. (1993), Measuring and Testing the Impact of News on Volatility. The Journal of Finance, 48: 1749-1778. https://doi.org/10.1111/j.1540-6261.1993.tb05127.x
@@ -169,6 +178,8 @@ fit_gjr@fit$matcoef
 fit_egarch@fit$matcoef
 #we can see from the result both with p-value of alpha1 smaller than 0.05, 
 #so it is statistical significant that positive and negative shocks have different volatility effect
+
+# --- Model comparison (AIC/BIC) ---
 
 #Ask for chatgpt on how to extract AIC and BIC 
 #Compare information criteria

@@ -1,4 +1,4 @@
-# ---- Helper functions -----
+# --- Helper functions ---
 
 # AIC computed manually for consistency across models fit with
 # different n.cond (arima()'s built-in AIC is not available for the CSS method)
