@@ -1,7 +1,7 @@
 ## ---- Package installation (for all scripts) ----------------
 # Installs every package used in scripts 00-05, but only those not yet installed.
 packages <- c("quantmod", "ggplot2", "bootUR", "forecast",
-              "rugarch", "dplyr", "lubridate", "zoo")
+              "rugarch", "dplyr", "zoo")
 
 missing_packages <- packages[!packages %in% rownames(installed.packages())] # tip by Chatgpt: avoids reinstallation of packages
 if (length(missing_packages) > 0) install.packages(missing_packages)
@@ -41,12 +41,6 @@ range(index(bac))        # check date range actually retrieved
 nrow(bac)                # number of trading days obtained
 
 # Conclusion: no missing data
-
-# Ask Chatgpt: How to save xts data to a csv file?
-write.zoo(bac, file = "BAC_daily.csv", sep = ",") 
-# zoo (Z's Ordered Observations) package is loaded together with xts which is loaded with quantmod
-# A zoo object is an ordered vector or matrix of data, each observation tagged with an index 
-# (usually a date/time, but it can be any ordered type — even plain integers)
 
 ## ---- Plots & Basic Descriptive Statistics -------------------
 

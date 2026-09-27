@@ -1,19 +1,11 @@
 library(dplyr)
-library(lubridate)
 library(zoo)
 
 ## ---- 1. Import ----
 
-# Load the CSV file (written by 00_Data_Extraction.R to the project folder) under filename "raw"
-raw <- read.csv("BAC_daily.csv", sep = ",")
-head(raw,10)
-
-# Create a second variable df and mutate it so all the entries are in the correct variable forms
-df <- raw %>%
-  mutate(
-    Index = ymd(Index),  # We saw from heading the first lines of the df that dates were indexed ymd
-    across(c(Open, High, Low, Close, Adjusted), as.numeric)
-  ) %>%
+# Use the bac data (xts) created in 00_Data_Extraction.R and convert it to a data frame,
+# with the dates in the Index column
+df <- data.frame(Index = index(bac), coredata(bac)) %>%
   arrange(Index)
 
 head(df,10)

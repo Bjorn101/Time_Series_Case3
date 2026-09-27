@@ -8,21 +8,21 @@ Open `Project.Rproj` in RStudio and run the scripts **in numerical order, in the
 
 | Order | Script | Needs from earlier scripts | Creates / passes on |
 |---|---|---|---|
-| 1 | `00_Data_Extraction.R` | – | `bac` (xts with OHLCV + Adjusted), `BAC_daily.csv` |
+| 1 | `00_Data_Extraction.R` | – | `bac` (xts with OHLCV + Adjusted) |
 | 2 | `01_Utils.R` | – | helper functions `compute_AIC()`, `split_train_test()`, `compute_forecast_error()`, `compute_rolling_window_errors()` |
 | 3 | `02_Price_UR_ARIMA.R` | `bac`, helper functions | ARIMA models for the price level |
 | 4 | `03_Return_UR_ARIMA.R` | `bac`, helper functions | `log_ret`, ARMA models for log returns |
 | 5 | `04_GARCH_Estimation.R` | `bac` | (G)ARCH / GJR / EGARCH fits |
-| 6 | `05_HAR-RV.R` | `BAC_daily.csv` | HAR model on realized range |
+| 6 | `05_HAR-RV.R` | `bac` | HAR model on realized range |
 
 ### Packages
 
-`00_Data_Extraction.R` installs every package the project needs (`quantmod`, `ggplot2`, `bootUR`, `forecast`, `rugarch`, `dplyr`, `lubridate`, `zoo`), but only the ones that aren't installed yet. The other scripts only load them with `library()`.
+`00_Data_Extraction.R` installs every package the project needs (`quantmod`, `ggplot2`, `bootUR`, `forecast`, `rugarch`, `dplyr`, `zoo`), but only the ones that aren't installed yet. The other scripts only load them with `library()`.
 
 ## What each script does
 
 ### `00_Data_Extraction.R`: packages and data
-Installs any missing packages for the whole project, then downloads daily BAC data from Yahoo Finance with `quantmod::getSymbols()`, renames the columns, checks for missing values (there are none) and saves the data to `BAC_daily.csv`. It also plots the adjusted close with the major events shaded: the Merrill Lynch acquisition, the GFC, the Euro debt crisis, the COVID-19 crash and the US–Iran war.
+Installs any missing packages for the whole project, then downloads daily BAC data from Yahoo Finance with `quantmod::getSymbols()`, renames the columns, checks for missing values (there are none) and stores the data as `bac`, which all later scripts use. A copy is also saved to `BAC_daily.csv`. It also plots the adjusted close with the major events shaded: the Merrill Lynch acquisition, the GFC, the Euro debt crisis, the COVID-19 crash and the US–Iran war.
 
 ### `01_Utils.R`: helper functions
 Reusable functions for the ARIMA scripts:
@@ -47,7 +47,7 @@ Reusable functions for the ARIMA scripts:
 - Compares the models by AIC/BIC. **EGARCH(1,1)** is selected: it has the lowest AIC/BIC and captures the asymmetric response to good and bad news.
 
 ### `05_HAR-RV.R`: realized volatility
-- Reads `BAC_daily.csv` (written by script 00).
+- Converts `bac` (from script 00) to a data frame.
 - Builds a range-based realized volatility with the Parkinson estimator, RR = (log High − log Low)² / (4 log 2).
 - Fits a HAR model (daily, weekly = 5-day and monthly = 22-day averages) with OLS for next-day volatility, and plots actual vs fitted.
 
@@ -55,10 +55,10 @@ Reusable functions for the ARIMA scripts:
 
 ```
 00_Data_Extraction ──► bac ──┬──► 02_Price_UR_ARIMA   (price is I(1) → random walk)
-        │                    ├──► 03_Return_UR_ARIMA  (log returns stationary, mean-only model;
-        │                    │                         residuals show volatility clustering)
-        │                    └──► 04_GARCH_Estimation (model that clustering: EGARCH)
-        └──► BAC_daily.csv ──────► 05_HAR-RV           (alternative volatility model on realized range)
+                             ├──► 03_Return_UR_ARIMA  (log returns stationary, mean-only model;
+                             │                         residuals show volatility clustering)
+                             ├──► 04_GARCH_Estimation (model that clustering: EGARCH)
+                             └──► 05_HAR-RV           (alternative volatility model on realized range)
 01_Utils ──► helper functions used by 02 and 03
 ```
 
