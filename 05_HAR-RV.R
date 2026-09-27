@@ -5,8 +5,8 @@ library(zoo)
 
 # Use the bac data (xts) created in 00_Data_Extraction.R and convert it to a data frame,
 # with the dates in the Index column
-df <- data.frame(Index = index(bac), coredata(bac)) %>%
-  arrange(Index)
+
+df <- data.frame(Index = index(bac), coredata(bac)) 
 
 head(df,10)
 
