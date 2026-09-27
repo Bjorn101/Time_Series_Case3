@@ -39,9 +39,9 @@ adf_log_ret <- adf(log_ret, deterministics = "intercept")
 adf_log_ret  # d = 1: reject H0 -> log returns are stationary
 
 adf_log_price <- adf(log(bac$Adjusted), deterministics = "intercept")
-adf_log_price  # d = 0: fail to reject H0 -> log price itself is nonstationary
+adf_log_price  # d = 0: fail to reject H0 -> log price itself is nonstationary -> log_price is I(1)
 
-# Bootstrap ADF Unit Root Test
+# Bootstrap ADF Unit Root Test (more robust against heteroskedasticity)
 boot_adf_log_ret_diff <- boot_adf(log_ret_diff, deterministics = "intercept")
 boot_adf_log_ret_diff # reject h0
 
@@ -49,7 +49,7 @@ boot_log_ret <- boot_adf(log_ret, deterministics = "intercept")
 boot_log_ret  # reject h0
 
 boot_adf_log_price <- boot_adf(log(bac$Adjusted), deterministics = "intercept")
-boot_adf_log_price # not reject h0
+boot_adf_log_price # not reject h0 -> log_price is I(1)
 
 # log price is I(1); log returns (log_ret) are stationary.
 # All subsequent modeling is done on log_ret.
