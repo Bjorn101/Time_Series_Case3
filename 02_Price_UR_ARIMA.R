@@ -3,11 +3,6 @@ library(forecast)
 
 # --- Plotting price and correlograms for the full period ---
 # Plot adjusted stock price
-plot(bac$Adjusted,
-     type = "l",
-     main = "Bank of America Adjusted Stock Price",
-     xlab = "Date",
-     ylab = "Adjusted Price (USD)")
 
 par(mfrow = c(1,2))
 acf(bac$Adjusted, main = "ACF of Bank of America Adjusted Stock Price") # autocorrelation
@@ -97,9 +92,9 @@ test_size <- 1 # 1-day-ahead forecast
 # ask ChatGPT: How to efficiently apply the compute_rolling_window_errors function on a list of arima models 
 # with varying orders and zero/non-zero means?
 orders <- list(
-  "ARIMA(0,1,0)" = list(order = c(0, 1, 0),        mean = TRUE),
-  "ARIMA(1,1,0)" = list(order = c(1, 1, 0),        mean = TRUE),
-  "ARIMA(0,1,1)" = list(order = c(0, 1, 1),        mean = TRUE)
+  "ARIMA(0,1,0)" = list(order = c(0, 1, 0), mean = TRUE),
+  "ARIMA(1,1,0)" = list(order = c(1, 1, 0), mean = TRUE),
+  "ARIMA(0,1,1)" = list(order = c(0, 1, 1), mean = TRUE)
 )
 
 rolling_errors_prices <- lapply(orders, function(order) {
