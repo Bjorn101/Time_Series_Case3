@@ -28,28 +28,24 @@ bac_diff1 <- na.omit(bac_diff1)
 bac_diff2 <- na.omit(bac_diff2)
 
 # Pantula principle: start with d = 2
-adf_diff2 <- adf(bac_diff2, deterministics = "intercept")
+adf_diff2 <- adf(bac_diff2, deterministics = "none")
 adf_diff2   # reject h0
 
 adf_diff1 <- adf(bac_diff1, deterministics = "intercept")
 adf_diff1   # reject h0
 
-adf_level <- adf(bac$Adjusted, deterministics = "intercept")
+adf_level <- adf(bac$Adjusted, deterministics = "trend")
 adf_level   # not reject h0 for d = 0 -> I(1) 
 
 # --- Bootstrap ADF Unit Root Test ---
-boot_adf_diff2 <- boot_adf(bac_diff2, deterministics = "intercept")
+boot_adf_diff2 <- boot_adf(bac_diff2, deterministics = "none")
 boot_adf_diff2 # reject h0
 
 boot_adf_diff1 <- boot_adf(bac_diff1, deterministics = "intercept")
 boot_adf_diff1  # reject h0
 
-boot_adf_level_int <- boot_adf(bac$Adjusted, deterministics = "intercept")
+boot_adf_level_int <- boot_adf(bac$Adjusted, deterministics = "trend")
 boot_adf_level_int # not reject h0
-
-# Bootstrap ADF with trend
-boot_adf_level_trend <- boot_adf(bac$Adjusted, deterministics = "trend")
-boot_adf_level_trend # todo: include result
 
 
 # --- ARIMA for price series ---
@@ -89,7 +85,7 @@ Model_Performance
 
 # --- Automated Arima ---
 
-auto_arima <- auto.arima(bac$Adjusted) # from forecast package
+auto_arima <- auto.arima(bac$Adjusted, ic = "aic", method = "CSS") # from forecast package
 summary(auto_arima)  # selects same model (0,1,0)
 checkresiduals(auto_arima)
 
