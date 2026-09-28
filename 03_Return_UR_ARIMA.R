@@ -32,23 +32,23 @@ plot(log_ret,    type = "l", main = "Log Returns")
 
 log_ret_diff <- diff(log_ret) # second difference of log price
 
-adf_log_ret_diff <- adf(log_ret_diff, deterministics = "intercept") # adf from bootUR package
+adf_log_ret_diff <- adf(log_ret_diff, deterministics = "none") # adf from bootUR package
 adf_log_ret_diff  # d = 2: reject H0 (no unit root left at this order)
 
 adf_log_ret <- adf(log_ret, deterministics = "intercept")
 adf_log_ret  # d = 1: reject H0 -> log returns are stationary
 
-adf_log_price <- adf(log(bac$Adjusted), deterministics = "intercept")
+adf_log_price <- adf(log(bac$Adjusted), deterministics = "trend")
 adf_log_price  # d = 0: fail to reject H0 -> log price itself is nonstationary -> log_price is I(1)
 
 # Bootstrap ADF Unit Root Test (more robust against heteroskedasticity)
-boot_adf_log_ret_diff <- boot_adf(log_ret_diff, deterministics = "intercept")
+boot_adf_log_ret_diff <- boot_adf(log_ret_diff, deterministics = "none")
 boot_adf_log_ret_diff # reject h0
 
 boot_log_ret <- boot_adf(log_ret, deterministics = "intercept")
 boot_log_ret  # reject h0
 
-boot_adf_log_price <- boot_adf(log(bac$Adjusted), deterministics = "intercept")
+boot_adf_log_price <- boot_adf(log(bac$Adjusted), deterministics = "trend")
 boot_adf_log_price # not reject h0 -> log_price is I(1)
 
 # log price is I(1); log returns (log_ret) are stationary.
