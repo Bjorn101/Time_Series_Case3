@@ -7,7 +7,7 @@ missing_packages <- packages[!packages %in% rownames(installed.packages())] # ti
 if (length(missing_packages) > 0) install.packages(missing_packages)
 
 library(ggplot2)
-library(quantmod)   # Tip from case description: to download data from Yahoo Finance
+library(quantmod) # Tip from case description: to download data from Yahoo Finance
 # quantmod also includes xts and zoo
 
 

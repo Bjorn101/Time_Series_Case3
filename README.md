@@ -62,4 +62,3 @@ Reusable functions for the ARIMA scripts:
 01_Utils ──► helper functions used by 02 and 03
 ```
 
-The story: prices are non-stationary (02), so we model returns (03). Returns are hard to predict in the mean, but their variance is predictable. That leads to GARCH-type models (04) and a HAR model for realized volatility (05).
