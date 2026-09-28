@@ -13,7 +13,7 @@ log_ret_raw <- diff(log(bac$Adjusted), differences = 1)
 simple_ret <- na.omit(simple_ret_raw)
 log_ret <- na.omit(log_ret_raw)
 
-range(index(simple_ret))  # sample starts on a Tuesday
+range(index(simple_ret)) # sample starts on a Tuesday
 range(index(log_ret)) # sample starts on a Tuesday
 
 # --- Exploratory analysis ---
