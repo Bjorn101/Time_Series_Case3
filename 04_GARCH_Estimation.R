@@ -5,7 +5,7 @@ library(rugarch)
 
 # --- Data preparation and ACF ---
 
-log_ret_clean <- 100 * diff(log(bac$Adjusted))
+log_ret_clean <- na.omit(100 * diff(log(bac$Adjusted)))
 
 #Plot ACF of log return and absolute log return to illustrate why arma do not work
 # ACF plot of log return

@@ -17,7 +17,7 @@ Open `Project.Rproj` in RStudio and run the scripts **in numerical order, in the
 
 ### Packages
 
-`00_Data_Extraction.R` installs every package the project needs (`quantmod`, `ggplot2`, `bootUR`, `forecast`, `rugarch`, `dplyr`, `zoo`), but only the ones that aren't installed yet. The other scripts only load them with `library()`.
+`00_Data_Extraction.R` installs every package the project needs (`quantmod`, `ggplot2`, `bootUR`, `forecast`, `rugarch`, `dplyr`, `zoo`, `GeneralizedHyperbolic`), but only the ones that aren't installed yet. The other scripts only load them with `library()`.
 
 ## What each script does
 
