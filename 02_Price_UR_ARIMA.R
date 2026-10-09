@@ -2,13 +2,13 @@ library(bootUR)
 library(forecast)
 
 # --- Plotting price and correlograms for the full period ---
-# Plot adjusted stock price
+# Plot adjusted stock price 
 
 par(mfrow = c(1,2))
 acf(bac$Adjusted, main = "ACF of Bank of America Adjusted Stock Price") # autocorrelation
 pacf(bac$Adjusted, main = "ACF of Bank of America Adjusted Stock Price") # partial autocorrelation
 par(mfrow = c(1,1))
-  
+
 # --- Unit Root Testing ---
 
 # Create first and second differences

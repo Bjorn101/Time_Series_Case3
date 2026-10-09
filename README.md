@@ -14,8 +14,11 @@ Open `Project.Rproj` in RStudio and run the scripts **in numerical order, in the
 | 4 | `03_Return_UR_ARIMA.R` | `bac`, helper functions | `log_ret`, ARMA models for log returns |
 | 5 | `04_GARCH_Estimation.R` | `bac` | (G)ARCH / GJR / EGARCH fits |
 | 6 | `05_HAR-RV.R` | `bac` | HAR model on realized range |
+| 7 | `07_Spillover_Package.R` | `bac`, `start_date`, `end_date`, `crisis_periods`, `crisis_colors`, `shade_crises()` | Diebold & Yilmaz (2012) volatility spillovers across US banks (`frequencyConnectedness` package) |
 
 ### Packages
+
+`07_Spillover_Package.R` also needs `vars` and `frequencyConnectedness` (install them once with `install.packages()`).
 
 `00_Data_Extraction.R` installs every package the project needs (`quantmod`, `ggplot2`, `bootUR`, `forecast`, `rugarch`, `dplyr`, `zoo`, `GeneralizedHyperbolic`), but only the ones that aren't installed yet. The other scripts only load them with `library()`.
 
@@ -51,6 +54,13 @@ Reusable functions for the ARIMA scripts:
 - Builds a range-based realized volatility with the Parkinson estimator, RR = (log High − log Low)² / (4 log 2).
 - Fits a HAR model (daily, weekly = 5-day and monthly = 22-day averages) with OLS for next-day volatility, and plots actual vs fitted.
 
+### `07_Spillover_Package.R`: volatility spillovers (multivariate extension)
+- Downloads JPM, C, WFC, GS and MS for the same dates as BAC.
+- Builds log range-based volatility per bank (same Parkinson range as in 05).
+- Estimates a VAR (lag order by BIC) and computes the Diebold & Yilmaz (2012) spillover table with `frequencyConnectedness::spilloverDY12()` (generalized FEVD, H = 10): total spillover index, TO/FROM, NET and pairwise net spillovers (bar chart and network plot).
+- Rolling 200-day total spillover index (`spilloverRollingDY12()`) with the crisis windows shaded, plus BAC's rolling net spillover.
+- Subsamples: GFC (crisis), 2013–2019 (calm) and COVID-19, with the same p and H for each.
+
 ## How the scripts connect
 
 ```
@@ -58,7 +68,9 @@ Reusable functions for the ARIMA scripts:
                              ├──► 03_Return_UR_ARIMA  (log returns stationary, mean-only model;
                              │                         residuals show volatility clustering)
                              ├──► 04_GARCH_Estimation (model that clustering: EGARCH)
-                             └──► 05_HAR-RV           (alternative volatility model on realized range)
+                             ├──► 05_HAR-RV           (alternative volatility model on realized range)
+                             └──► 07_Spillover_Package (multivariate: VAR on range volatility of 6 banks
+                                                       → Diebold–Yilmaz spillovers, crisis vs calm)
 01_Utils ──► helper functions used by 02 and 03
 ```
 
