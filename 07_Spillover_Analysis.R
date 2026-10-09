@@ -1,6 +1,6 @@
-library(vars)                   # VARselect(), VAR(), roots()
-library(frequencyConnectedness) # spilloverDY12(), overall(), to(), from(), net(), pairwise()
-library(quantmod)               # getSymbols() for the other banks (also loads xts/zoo)
+library(vars)                   
+library(frequencyConnectedness) # this includes the functions for the spillover analysis
+library(quantmod)               # get data with getSymbols() for the other banks
 
 
 # --- Settings ---
@@ -70,7 +70,8 @@ dy_table <- function(theta, to, from, net, total) {
               TO  = c(to, total),
               NET = c(net, NA)), 2)
 }
-dy_table(theta, to_spill, from_spill, net_spill, total)
+dy_table <- dy_table(theta, to_spill, from_spill, net_spill, total)
+dy_table
 
 # askChatgpt: Can you compute the pairwise spillovers and visualize them?
 pairwise_matrix <- function(pw_vec, assets) {
@@ -161,7 +162,8 @@ plot(roll_dates, as.numeric(roll_net[, "BAC"]), type = "n",
 shade_crises()
 lines(roll_dates, as.numeric(roll_net[, "BAC"]), lwd = 1.2)
 abline(h = 0, lty = 2)
-
+legend("bottomleft", legend = crisis_periods$name, fill = crisis_colors,
+       border = NA, bty = "n", cex = 0.7)
 
 # --- Subsample analysis: crisis vs non-crisis ---
 
@@ -224,9 +226,11 @@ for (nm in periods) {
 # Network plots for every crisis and calm period, with the same arrow scale in all panels
 pw_sub <- lapply(sub_spill[periods],
                  function(s) pairwise_matrix(pairwise(s)[[1]], colnames(vol)))
-max_w <- max(sapply(pw_sub, max))
-par(mfrow = c(2, 4)) # 4 crises (top row) + 4 calm periods (bottom row)
-for (nm in periods) plot_spillover_network(pw_sub[[nm]], main = nm, max_w = max_w)
+
+par(mfrow = c(1, 3)) # 4 crises (top row) + 4 calm periods (bottom row)
+for (nm in c("GFC", "COVID-19 Crash", "Calm 2020-07 to 2026-02")) {
+  plot_spillover_network(pw_sub[[nm]], main = nm, max_w = max_w)
+}  
 par(mfrow = c(1, 1))
 
 
