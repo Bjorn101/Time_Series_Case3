@@ -4,8 +4,8 @@ library(quantmod)               # get data with getSymbols() for the other banks
 
 
 # --- Settings ---
-H              <- 10    # forecast horizon (days) of the variance decomposition, as in DY (2012)
-window_size    <- 200   # rolling window length (trading days), as in DY (2012)
+H <- 10 # forecast horizon as in DY (2012)
+window_size <- 200# rolling window length as in DY (2012)
 
 # askChatgpt: retrieve the daily logged range of the six largest US banks by assets-under-management. (We already have bac)
 # --- Data: log range-based volatility of six large US banks (Bank of America, JP Morgan, Citi, Wells Fargo, Goldman Sachs, Morgan Stanley) ---
@@ -39,7 +39,7 @@ nrow(vol)
 
 
 # --- Full-sample VAR ---
-lag_sel <- VARselect(vol, lag.max = 20, type = "const") # using vars package
+lag_sel <- VARselect(vol, lag.max = 22, type = "const") # using vars package
 lag_sel$selection
 p_var <- as.numeric(lag_sel$selection["SC(n)"]) # BIC: not AIC, because we care more about efficiency. AIC would make the VAR too complex.
 
@@ -52,44 +52,46 @@ sp_full <- spilloverDY12(var_full, n.ahead = H - 1, no.corr = FALSE)
 # n.ahead = H - 1: the package sums h = 0..n.ahead, DY (2012) sum h = 0..H-1
 # no.corr = FALSE: keep the off-diagonal elements of Sigma (correlated shocks), as in DY (2012)
 
-theta <- sp_full$tables[[1]]     # normalized GFEVD: rows = receiver i, columns = transmitter j
-round(rowSums(theta), 6)     # every row sums to 1
-
-# The DY (2012) measures (all in %, divided by N)
-# (not named to/from/net, so the variables don't look like the package functions)
-total      <- overall(sp_full)[[1]] # total spillover index
-to_spill   <- to(sp_full)[[1]]      # transmitted by each bank to the others
-from_spill <- from(sp_full)[[1]]    # received by each bank from the others
-net_spill  <- net(sp_full)[[1]]     # to - from
-total
-round(rbind(TO = to_spill, FROM = from_spill, NET = net_spill), 2)
-
-# Spillover table in the usual layout
-dy_table <- function(theta, to, from, net, total) {
-  round(rbind(cbind(theta * 100, FROM = from),
-              TO  = c(to, total),
-              NET = c(net, NA)), 2)
+# Spillover table
+generate_spillover_table <- function(sp_full) {
+  theta_percent <- sp_full * 100        # rows sum to 100
+  dimnames(theta_percent) <- list(colnames(vol), colnames(vol))  # bank names on rows and columns
+  
+  from_others <- rowSums(theta_percent) - diag(theta_percent)   # per row    (receiver)
+  to_others   <- colSums(theta_percent) - diag(theta_percent)   # per column (transmitter)
+  net         <- to_others - from_others
+  total       <- sum(from_others) / ncol(theta_percent)          # total spillover index S
+  
+  dy_tab <- cbind(theta_percent, FROM_others = from_others)      # add column
+  dy_tab <- rbind(dy_tab,
+                  TO_others = c(to_others, total),               # add row (+ S in the corner)
+                  NET       = c(net, NA))
+  return(round(dy_tab, 2))
 }
-dy_table <- dy_table(theta, to_spill, from_spill, net_spill, total)
-dy_table
+spillover_table <- generate_spillover_table(sp_full$tables[[1]])
+spillover_table
 
-# askChatgpt: Can you compute the pairwise spillovers and visualize them?
-pairwise_matrix <- function(pw_vec, assets) {
-  pw <- matrix(0, length(assets), length(assets), dimnames = list(assets, assets))
-  for (nm in names(pw_vec)) {
-    ab <- strsplit(nm, "-")[[1]] # ab[1] = A, ab[2] = B
-    pw[ab[2], ab[1]] <-  pw_vec[[nm]] # B -> A
-    pw[ab[1], ab[2]] <- -pw_vec[[nm]] # A -> B
-  }
-  pw
+
+
+# askChatgpt: Can you compute the pairwise spillovers from the spillover_table and visualize them?
+pairwise_matrix <- function(spillover_table) {
+  banks <- names(vol)
+  theta_tab <- spillover_table[banks, banks]      # the N x N block of shares (in %)
+  pw   <- (t(theta_tab) - theta_tab)/length(banks)
+  return(round(pw, 2))
 }
-pw_full <- pairwise_matrix(pairwise(sp_full)[[1]], colnames(vol))
-round(pw_full, 2)
 
-# Net spillovers per bank
+pw_full <- pairwise_matrix(spillover_table)
+pw_full
+
+# Net spillovers per bank, from the NET row of the table
+net_spill <- spillover_table["NET", names(vol)]
+lim <- c(-1, 1) * ceiling(max(abs(net_spill)))      # symmetric axis: -10 to 10
 barplot(sort(net_spill), las = 2, col = ifelse(sort(net_spill) > 0, "tomato", "skyblue"),
+        ylim = lim, yaxt = "n",
         main = "Net volatility spillovers, full sample",
-        ylab = "Net spillover (% of system variance)")
+        ylab = "Net spillover (TO - FROM, %-points)")
+axis(2, at = seq(lim[1], lim[2], by = 2), las = 1)  # ticks every 2 points, axis covers all bars
 abline(h = 0)
 
 # Network plot: arrow i -> j if i is a net transmitter to j
@@ -218,19 +220,18 @@ barplot(sub_summary$total, names.arg = rownames(sub_summary), col = period_type,
 # Full spillover tables for every crisis and calm period
 periods <- setdiff(names(subsamples), "Full sample")
 for (nm in periods) {
-  s <- sub_spill[[nm]]
+  s <- sub_spill[[nm]]$tables[[1]]
   cat("\n", nm, "\n")
-  print(dy_table(s$tables[[1]], to(s)[[1]], from(s)[[1]], net(s)[[1]], overall(s)[[1]]))
+  print(generate_spillover_table(s))
 }
 
 # Network plots for every crisis and calm period, with the same arrow scale in all panels
 pw_sub <- lapply(sub_spill[periods],
-                 function(s) pairwise_matrix(pairwise(s)[[1]], colnames(vol)))
+                 function(s) pairwise_matrix(generate_spillover_table(s$tables[[1]])))
+max_w <- max(sapply(pw_sub, max)) # largest link over all periods -> same arrow scale in every panel
 
-par(mfrow = c(1, 3)) # 4 crises (top row) + 4 calm periods (bottom row)
+par(mfrow = c(1, 3)) # three panels next to each other
 for (nm in c("GFC", "COVID-19 Crash", "Calm 2020-07 to 2026-02")) {
   plot_spillover_network(pw_sub[[nm]], main = nm, max_w = max_w)
 }  
 par(mfrow = c(1, 1))
-
-
