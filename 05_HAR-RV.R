@@ -1,11 +1,6 @@
 library(dplyr)
 library(zoo)
 
-# Check that the required 'bac' dataset is loaded in the global environment
-if (!exists("bac")) {
-  stop("Object 'bac' not found. Please run '00_Data_Extraction.R' first.")
-}
-
 # --- 1. Data Preparation & Parkinson Realized Range ---
 
 # Convert xts object to data frame preserving Date index
