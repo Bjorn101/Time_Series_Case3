@@ -1,0 +1,98 @@
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(zoo)
+
+# --- Graph 1: Visualizing 3 Trading Horizons (Lehman Collapse Window) ---
+
+df_lehman <- data.frame(Date = index(bac), coredata(bac)) %>%
+  filter(Date >= "2008-06-01" & Date <= "2008-12-31") %>%
+  mutate(
+    `1. Daily (Day Traders)` = sqrt((log(High) - log(Low))^2 / (4 * log(2))),
+    `2. Weekly (Portfolio Mgrs)` = rollmean(`1. Daily (Day Traders)`, k = 5, fill = NA, align = "right"),
+    `3. Monthly (Institutions)` = rollmean(`1. Daily (Day Traders)`, k = 22, fill = NA, align = "right")
+  ) %>%
+  filter(!is.na(`3. Monthly (Institutions)`))
+
+bac_long <- df_lehman %>%
+  select(Date, `1. Daily (Day Traders)`, `2. Weekly (Portfolio Mgrs)`, `3. Monthly (Institutions)`) %>%
+  pivot_longer(cols = -Date, names_to = "Horizon", values_to = "Volatility")
+
+ggplot(bac_long, aes(x = Date, y = Volatility, color = Horizon)) +
+  geom_line(linewidth = 0.8) +
+  facet_wrap(~ Horizon, ncol = 1, scales = "fixed") + 
+  scale_color_manual(values = c("1. Daily (Day Traders)" = "#377eb8", 
+                                "2. Weekly (Portfolio Mgrs)" = "#4daf4a", 
+                                "3. Monthly (Institutions)" = "#e41a1c")) +
+  labs(
+    title = "HAR Time Horizons: Bank of America",
+    subtitle = "Shared scale visually proves how daily noise fluctuates around the smooth institutional floor",
+    x = "Date",
+    y = "Realized Range Volatility"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(face = "bold", size = 11)
+  )
+
+
+# --- Graph 2: Integrated Variance (IV) vs. Realized Variance (RV) ---
+
+set.seed(123)
+n_high_res <- 1000 # Continuous time path (IV)
+n_low_res  <- 20   # Discrete intraday sampling (RV)
+
+time_seq <- seq(0, 1, length.out = n_high_res)
+price_path <- cumsum(rnorm(n_high_res, mean = 0, sd = 0.1)) + 100
+
+df_continuous <- data.frame(Time = time_seq, Price = price_path)
+idx_discrete  <- seq(1, n_high_res, length.out = n_low_res)
+df_discrete   <- df_continuous[idx_discrete, ]
+
+ggplot() +
+  geom_line(data = df_continuous, aes(x = Time, y = Price), color = "gray70", linewidth = 1.2, alpha = 0.8) +
+  geom_step(data = df_discrete, aes(x = Time, y = Price), color = "#2b5c8f", linewidth = 1) +
+  geom_point(data = df_discrete, aes(x = Time, y = Price), color = "#2b5c8f", size = 2) +
+  annotate("text", x = 0.5, y = 102.2, label = "2. Discrete Sampling (Realized Variance)", color = "#2b5c8f", fontface = "bold") +
+  annotate("text", x = 0.55, y = 99.8, label = "1. Continuous Path\n(Integrated Variance)", color = "gray40", fontface = "bold") +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Estimating Integrated Variance (IV)",
+    subtitle = "RV sums discrete blue steps to estimate continuous IV",
+    x = "Trading Day",
+    y = "Price"
+  ) +
+  theme(
+    axis.text.x = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+
+
+# --- Graph 3: Realized Range (RR) Bounding Box vs. IV ---
+
+price_max <- max(price_path)
+price_min <- min(price_path)
+
+ggplot() +
+  geom_line(data = df_continuous, aes(x = Time, y = Price), color = "gray70", linewidth = 1.2, alpha = 0.8) +
+  geom_step(data = df_discrete, aes(x = Time, y = Price), color = "#2b5c8f", linewidth = 1) +
+  geom_point(data = df_discrete, aes(x = Time, y = Price), color = "#2b5c8f", size = 2) +
+  geom_hline(yintercept = price_max, color = "#d95f02", linetype = "dashed", linewidth = 1) +
+  geom_hline(yintercept = price_min, color = "#d95f02", linetype = "dashed", linewidth = 1) +
+  annotate("rect", xmin = 0, xmax = 1, ymin = price_min, ymax = price_max, fill = "#d95f02", alpha = 0.1) +
+  annotate("text", x = 0.02, y = price_max + 0.3, label = "High (Realized Range)", color = "#d95f02", fontface = "bold", hjust = 0) +
+  annotate("text", x = 0.02, y = price_min - 0.3, label = "Low (Realized Range)", color = "#d95f02", fontface = "bold", hjust = 0) +
+  annotate("text", x = 0.5, y = 102.2, label = "Discrete Sampling (Realized Variance)", color = "#2b5c8f", fontface = "bold") +
+  annotate("text", x = 0.55, y = 99.8, label = "Continuous Path\n(Integrated Variance)", color = "gray40", fontface = "bold") +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Estimating Integrated Variance (IV)",
+    subtitle = "RR uses orange boundaries to quickly estimate IV without tick data",
+    x = "Trading Day",
+    y = "Price"
+  ) +
+  theme(
+    axis.text.x = element_blank(),
+    panel.grid.minor = element_blank()
+  )
