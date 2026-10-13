@@ -1,7 +1,7 @@
 # --- Package installation (for all scripts) ---
 # Installs every package used in scripts 00-05, but only those not yet installed.
 packages <- c("quantmod", "ggplot2", "bootUR", "forecast",
-              "rugarch", "dplyr", "zoo", "GeneralizedHyperbolic", "vars", "frequencyConnectedness")
+              "rugarch", "dplyr", "zoo", "GeneralizedHyperbolic", "vars", "frequencyConnectedness", "tidyr")
 
 missing_packages <- packages[!packages %in% rownames(installed.packages())] # tip by Chatgpt: avoids reinstallation of packages
 if (length(missing_packages) > 0) {
